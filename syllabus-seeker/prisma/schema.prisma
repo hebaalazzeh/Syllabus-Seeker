@@ -1,11 +1,10 @@
-generator client {
-  provider = "prisma-client-js"
-}
-
 datasource db {
   provider = "postgresql"
-  url      = env("POSTGRES_PRISMA_URL")
-  directUrl = env("POSTGRES_URL_NON_POOLING") // Used for migrations
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
 }
 
 model School {
@@ -16,58 +15,53 @@ model School {
   updatedAt DateTime   @updatedAt
 }
 
-model Department {
-  id        String     @id @default(cuid())
-  name      String
-  courses   Course[]
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+model Course {
+  id          String     @id @default(cuid())
+  courseCode  String
+  name        String
+  school      School     @relation(fields: [schoolId], references: [id])
+  schoolId    String
+  professors  Professor[]
+  syllabi     Syllabus[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@unique([schoolId, courseCode])
 }
 
 model Professor {
   id        String     @id @default(cuid())
   name      String
-  email     String?
+  courses   Course[]
   syllabi   Syllabus[]
+  ratings   Rating[]
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
 }
 
-model Course {
-  id           String     @id @default(cuid())
-  courseCode   String
-  name         String
-  school       School     @relation(fields: [schoolId], references: [id])
-  schoolId     String
-  department   Department @relation(fields: [departmentId], references: [id])
-  departmentId String
-  syllabi      Syllabus[]
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-}
-
 model Syllabus {
-  id           String     @id @default(cuid())
-  course       Course     @relation(fields: [courseId], references: [id])
-  courseId     String
-  professor    Professor  @relation(fields: [professorId], references: [id])
-  professorId  String
-  term         String
-  year         Int
-  fileUrl      String?
-  fileData     String?
-  professorRating Float?
-  courseRating   Float?
-  comments     Comment[]
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  id          String    @id @default(cuid())
+  year        Int
+  term        String    // Fall, Winter, Spring, Summer
+  fileUrl     String?
+  textContent String?
+  course      Course    @relation(fields: [courseId], references: [id])
+  courseId    String
+  professor   Professor @relation(fields: [professorId], references: [id])
+  professorId String
+  ratings     Rating[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }
 
-model Comment {
-  id         String   @id @default(cuid())
-  content    String
-  syllabus   Syllabus @relation(fields: [syllabusId], references: [id])
-  syllabusId String
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+model Rating {
+  id          String    @id @default(cuid())
+  rating      Int       // 1-5
+  comment     String?
+  syllabus    Syllabus  @relation(fields: [syllabusId], references: [id])
+  syllabusId  String
+  professor   Professor @relation(fields: [professorId], references: [id])
+  professorId String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }
