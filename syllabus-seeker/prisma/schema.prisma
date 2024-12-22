@@ -1,60 +1,73 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
-generator client {
-  provider = "prisma-client-js"
+  url      = env("POSTGRES_PRISMA_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING") // Used for migrations
 }
 
-datasource db {
-  provider = "postgresql"
-  url      = env.DATABASE_URL
-}
-
-model User {
+model School {
   id        String     @id @default(cuid())
-  email     String     @unique
-  password  String
-  name      String?
-  syllabi   Syllabus[]
-  reviews   Review[]
+  name      String
+  courses   Course[]
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
 }
 
-model Syllabus {
-  id          String   @id @default(cuid())
-  title       String
-  school      String
-  professor   String
-  semester    String
-  year        Int
-  fileUrl     String
-  author      User     @relation(fields: [authorId], references: [id])
-  authorId    String
-  reviews     Review[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+model Department {
+  id        String     @id @default(cuid())
+  name      String
+  courses   Course[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 }
 
-model Review {
+model Professor {
+  id        String     @id @default(cuid())
+  name      String
+  email     String?
+  syllabi   Syllabus[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model Course {
+  id           String     @id @default(cuid())
+  courseCode   String
+  name         String
+  school       School     @relation(fields: [schoolId], references: [id])
+  schoolId     String
+  department   Department @relation(fields: [departmentId], references: [id])
+  departmentId String
+  syllabi      Syllabus[]
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+model Syllabus {
+  id           String     @id @default(cuid())
+  course       Course     @relation(fields: [courseId], references: [id])
+  courseId     String
+  professor    Professor  @relation(fields: [professorId], references: [id])
+  professorId  String
+  term         String
+  year         Int
+  fileUrl      String?
+  fileData     String?
+  professorRating Float?
+  courseRating   Float?
+  comments     Comment[]
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+model Comment {
   id         String   @id @default(cuid())
-  rating     Float
-  comment    String?
+  content    String
   syllabus   Syllabus @relation(fields: [syllabusId], references: [id])
   syllabusId String
-  user       User     @relation(fields: [userId], references: [id])
-  userId     String
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 }
