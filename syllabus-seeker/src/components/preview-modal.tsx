@@ -151,7 +151,7 @@ const PreviewModal = ({ onClose, syllabus }: PreviewModalProps) => {
                         {rating.comment && rating.comment.trim() && (
                           <div className="mb-3">
                             <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
-                              "{rating.comment}"
+                                &ldquo;{comment}&rdquo;
                             </p>
                           </div>
                         )}
