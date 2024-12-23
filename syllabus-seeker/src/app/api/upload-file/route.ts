@@ -7,14 +7,18 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+// New way to configure the route
+export const runtime = 'edge';
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: Request) {
   try {
-    const formData = await request.formData();
-    const file = formData.get('file') as File;
+    const data = await request.formData();
+    const file = data.get('file') as File;
 
     if (!file) {
       return NextResponse.json(
-        { success: false, error: 'No file provided' },
+        { error: 'No file provided' },
         { status: 400 }
       );
     }
@@ -37,18 +41,12 @@ export async function POST(request: Request) {
       ).end(buffer);
     });
 
-    return NextResponse.json({ success: true, data: result });
+    return NextResponse.json(result);
   } catch (error) {
     console.error('File upload error:', error);
     return NextResponse.json(
-      { success: false, error: 'Error uploading file' },
+      { error: 'Error uploading file' },
       { status: 500 }
     );
   }
 }
-
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
