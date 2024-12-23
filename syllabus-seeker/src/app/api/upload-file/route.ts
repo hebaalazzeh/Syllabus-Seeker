@@ -1,20 +1,9 @@
 import { NextResponse } from 'next/server';
-import { v2 as cloudinary } from 'cloudinary';
-
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
-
-// New way to configure the route
-export const runtime = 'edge';
-export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
   try {
-    const data = await request.formData();
-    const file = data.get('file') as File;
+    const formData = await request.formData();
+    const file = formData.get('file') as File;
 
     if (!file) {
       return NextResponse.json(
@@ -23,30 +12,41 @@ export async function POST(request: Request) {
       );
     }
 
-    // Convert file to buffer
+    // Convert file to base64
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
+    const base64 = buffer.toString('base64');
 
-    // Upload to Cloudinary
-    const result = await new Promise((resolve, reject) => {
-      cloudinary.uploader.upload_stream(
-        {
-          resource_type: 'raw',
-          folder: 'syllabi',
-        },
-        (error, result) => {
-          if (error) reject(error);
-          resolve(result);
-        }
-      ).end(buffer);
+    // Upload to Cloudinary using their upload API directly
+    const uploadResponse = await fetch(`https://api.cloudinary.com/v1_1/${process.env.CLOUDINARY_CLOUD_NAME}/raw/upload`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        file: `data:${file.type};base64,${base64}`,
+        upload_preset: process.env.CLOUDINARY_UPLOAD_PRESET,
+      }),
     });
 
-    return NextResponse.json(result);
+    if (!uploadResponse.ok) {
+      throw new Error('Upload to Cloudinary failed');
+    }
+
+    const result = await uploadResponse.json();
+    return NextResponse.json({
+      success: true,
+      url: result.secure_url
+    });
+
   } catch (error) {
     console.error('File upload error:', error);
     return NextResponse.json(
-      { error: 'Error uploading file' },
+      { success: false, error: 'Error uploading file' },
       { status: 500 }
     );
   }
 }
+
+// These configurations are compatible with Edge runtime
+export const runtime = 'edge';
