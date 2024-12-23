@@ -1,8 +1,9 @@
-"use client"
+"use client";
 
-import { useState } from 'react';
-import { Search, School, Book, User } from 'lucide-react';
+import { useState } from "react";
+import { Search, School, Book, User } from "lucide-react";
 
+// Define types for search parameters and results
 interface SearchParams {
   school: string;
   course: string;
@@ -10,17 +11,23 @@ interface SearchParams {
   year: string;
 }
 
+interface SearchResult {
+  id: string; // Adjust these properties to match your API response
+  title: string;
+  description: string;
+}
+
 interface SearchFormProps {
-  onSearch: (results: any[]) => void;
+  onSearch: (results: SearchResult[]) => void; // Use a specific type instead of `any[]`
   onSearchStart?: () => void;
 }
 
 const SearchForm = ({ onSearch, onSearchStart }: SearchFormProps) => {
   const [searchParams, setSearchParams] = useState<SearchParams>({
-    school: '',
-    course: '',
-    professor: '',
-    year: ''
+    school: "",
+    course: "",
+    professor: "",
+    year: "",
   });
 
   const [isSearching, setIsSearching] = useState(false);
@@ -37,27 +44,24 @@ const SearchForm = ({ onSearch, onSearchStart }: SearchFormProps) => {
       });
 
       const response = await fetch(`/api/search?${queryParams}`);
-      
+
       if (!response.ok) {
-        throw new Error('Search request failed');
+        throw new Error("Search request failed");
       }
 
-      const results = await response.json();
+      const results: SearchResult[] = await response.json();
       onSearch(Array.isArray(results) ? results : []);
 
     } catch (error) {
-      console.error('Search error:', error);
-      onSearch([]); // Return empty array on error
+      console.error("Search error:", error);
+      onSearch([]); // Return an empty array on error
     } finally {
       setIsSearching(false);
     }
   };
 
   const currentYear = new Date().getFullYear();
-  const years = Array.from(
-    { length: currentYear - 1999 },
-    (_, i) => currentYear - i
-  );
+  const years = Array.from({ length: currentYear - 1999 }, (_, i) => currentYear - i);
 
   return (
     <form onSubmit={handleSearch} className="w-full max-w-4xl mx-auto p-6 space-y-4">

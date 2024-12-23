@@ -5,22 +5,25 @@ import SearchForm from '@/components/search-form';
 import SearchResults from '@/components/search-results';
 import UploadModal from '@/components/upload-modal';
 
+// Define the expected type for search parameters
+type SearchParams = Record<string, string | number | undefined>;
+
 export default function Home() {
   const [searchResults, setSearchResults] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleSearch = async (params: any) => {
+  const handleSearch = async (params: SearchParams) => {
     setIsLoading(true);
     try {
       const queryParams = new URLSearchParams();
       Object.entries(params).forEach(([key, value]) => {
-        if (value) queryParams.append(key, value as string);
+        if (value !== undefined) queryParams.append(key, value.toString());
       });
 
       const response = await fetch(`/api/search?${queryParams}`);
       if (!response.ok) throw new Error('Search failed');
-      
+
       const data = await response.json();
       setSearchResults(data);
     } catch (error) {
