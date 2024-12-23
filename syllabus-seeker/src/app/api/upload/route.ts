@@ -1,95 +1,100 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { v4 as uuidv4 } from 'uuid'; // For generating unique file names
-import fs from 'fs';
-import path from 'path';
-
-
 
 export async function POST(request: Request) {
   try {
-    // Parse the FormData from the request
-    const formData = await request.formData();
-    const schoolName = formData.get('schoolName') as string;
-    const courseCode = formData.get('courseCode') as string;
-    const courseName = formData.get('courseName') as string;
-    const professorName = formData.get('professorName') as string;
-    const year = formData.get('year') as string;
-    const term = formData.get('term') as string;
-    const file = formData.get('file') as File | null;
-
+    const data = await request.json();
+    
     // Validate required fields
-    if (!schoolName || !courseCode || !courseName || !professorName || !year || !term || !file) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    if (!data.schoolName || !data.courseCode || !data.courseName || !data.professorName || !data.year || !data.term) {
+      return NextResponse.json({
+        success: false,
+        error: 'Missing required fields'
+      }, { status: 400 });
     }
 
-    // Generate a unique file name and file URL
-    const fileName = `${uuidv4()}-${file.name}`;
-    const fileUrl = `/uploads/${fileName}`; // URL path for serving the file
+    // Create the syllabus and its relationships
+    const result = await prisma.$transaction(async (tx) => {
+      // Create or find school
+      const school = await tx.school.upsert({
+        where: { name: data.schoolName },
+        update: {},
+        create: { name: data.schoolName }
+      });
 
-    // Convert the file into a buffer
-    const fileBuffer = await file.arrayBuffer();
+      // Create or find professor
+      const professor = await tx.professor.upsert({
+        where: { name: data.professorName },
+        update: {},
+        create: { name: data.professorName }
+      });
 
-    // Save the file locally (optional for development)
-    const uploadsDir = path.join(process.cwd(), 'public/uploads');
-    if (!fs.existsSync(uploadsDir)) {
-      fs.mkdirSync(uploadsDir, { recursive: true });
-    }
-    const filePath = path.join(uploadsDir, fileName);
-    fs.writeFileSync(filePath, Buffer.from(fileBuffer));
-
-    // Database operations using Prisma
-    const school = await prisma.school.upsert({
-      where: { name: schoolName },
-      update: {},
-      create: { name: schoolName },
-    });
-
-    const course = await prisma.course.upsert({
-      where: {
-        schoolId_courseCode: {
-          schoolId: school.id,
-          courseCode: courseCode,
+      // Create or find course
+      const course = await tx.course.upsert({
+        where: {
+          schoolId_courseCode: {
+            schoolId: school.id,
+            courseCode: data.courseCode
+          }
         },
-      },
-      update: { name: courseName },
-      create: {
-        courseCode,
-        name: courseName,
-        schoolId: school.id,
-      },
-    });
+        update: { name: data.courseName },
+        create: {
+          courseCode: data.courseCode,
+          name: data.courseName,
+          schoolId: school.id
+        }
+      });
 
-    const professor = await prisma.professor.upsert({
-      where: { name: professorName },
-      update: {},
-      create: { name: professorName },
-    });
+      // Create syllabus
+      const syllabus = await tx.syllabus.create({
+        data: {
+          year: parseInt(data.year.toString()),
+          term: data.term,
+          fileUrl: data.fileUrl || null,
+          textContent: data.textContent || null,
+          courseId: course.id,
+          professorId: professor.id
+        }
+      });
 
-    const syllabus = await prisma.syllabus.create({
-      data: {
-        year: parseInt(year),
-        term,
-        fileUrl,
-        textContent: '', // Optional: Process file content here if needed
-        courseId: course.id,
-        professorId: professor.id,
-      },
-      include: {
-        course: {
-          include: {
-            school: true,
+      // Create rating if provided
+      if (data.courseRating || data.professorRating || data.notes) {
+        await tx.rating.create({
+          data: {
+            courseRating: data.courseRating || null,
+            professorRating: data.professorRating || null,
+            comment: data.notes || null,
+            syllabusId: syllabus.id,
+            professorId: professor.id,
+          }
+        });
+      }
+
+      // Return complete syllabus with all relationships
+      return await tx.syllabus.findUnique({
+        where: { id: syllabus.id },
+        include: {
+          course: {
+            include: {
+              school: true
+            }
           },
-        },
-        professor: true,
-        ratings: true,
-      },
+          professor: true,
+          ratings: true
+        }
+      });
     });
 
-    // Return the created syllabus data
-    return NextResponse.json(syllabus);
+    return NextResponse.json({
+      success: true,
+      data: result
+    });
+
   } catch (error) {
     console.error('Upload error:', error);
-    return NextResponse.json({ error: 'Failed to upload syllabus' }, { status: 500 });
+    return NextResponse.json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to upload syllabus'
+    }, { status: 500 });
   }
 }

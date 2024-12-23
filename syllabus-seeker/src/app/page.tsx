@@ -1,66 +1,77 @@
 "use client"
 
-import { useState } from 'react'
-import SearchForm from '@/components/search-form'
-import SearchResults from '@/components/search-results'
-import UploadModal from '@/components/upload-modal'
+import { useState } from 'react';
+import SearchForm from '@/components/search-form';
+import SearchResults from '@/components/search-results';
+import UploadModal from '@/components/upload-modal';
 
 export default function Home() {
-  const [searchResults, setSearchResults] = useState([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [isModalOpen, setIsModalOpen] = useState(false) // State for modal visibility
+  const [searchResults, setSearchResults] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleSearch = async (params: any) => {
-    setIsLoading(true)
-    try {
-      const queryParams = new URLSearchParams()
-      Object.entries(params).forEach(([key, value]) => {
-        if (value) queryParams.append(key, value as string)
-      })
+  const handleSearchStart = () => {
+    setIsLoading(true);
+  };
 
-      const response = await fetch(`/api/search?${queryParams}`)
-      if (!response.ok) throw new Error('Search failed')
-      
-      const data = await response.json()
-      setSearchResults(data)
-    } catch (error) {
-      console.error('Search error:', error)
-      // TODO: Implement error handling UI
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  const handleSearchResults = (results: any[]) => {
+    setSearchResults(results);
+    setIsLoading(false);
+  };
 
   return (
-    <div className="container mx-auto py-8 px-4">
-      <header className="text-center mb-8">
-        <h1 className="text-4xl font-bold mb-2 dark:text-white">Syllabus Seeker</h1>
-        <p className="text-gray-600 dark:text-gray-300">
-          Find and share course syllabi from your school
-        </p>
-      </header>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="container mx-auto py-8 px-4">
+        <header className="text-center mb-12">
+          <h1 className="text-4xl font-bold mb-3 text-gray-900 dark:text-white">
+            Syllabus Seeker
+          </h1>
+          <p className="text-lg text-gray-600 dark:text-gray-300">
+            Find and share course syllabi from your school
+          </p>
+        </header>
 
-      <SearchForm onSearch={handleSearch} />
-      <SearchResults results={searchResults} isLoading={isLoading} />
-      
-      {/* Button to open modal */}
-      <button
-        onClick={() => setIsModalOpen(true)}
-        className="fixed bottom-4 right-4 bg-blue-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
-      >
-        +
-      </button>
-
-      {/* Upload Modal */}
-      {isModalOpen && (
-        <UploadModal 
-          onClose={() => setIsModalOpen(false)} // Close modal handler
-          onUpload={(file) => {
-            console.log("File uploaded:", file);
-            setIsModalOpen(false); // Close modal after upload
-          }} 
+        <SearchForm 
+          onSearch={handleSearchResults}
+          onSearchStart={handleSearchStart}
         />
-      )}
+        
+        <div className="mt-8">
+          <SearchResults results={searchResults} isLoading={isLoading} />
+        </div>
+
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="fixed bottom-6 right-6 bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full 
+                   shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-110"
+          aria-label="Upload Syllabus"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-6 w-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 4v16m8-8H4"
+            />
+          </svg>
+        </button>
+
+        {isModalOpen && (
+          <UploadModal 
+            onClose={() => setIsModalOpen(false)}
+            onSuccess={(data) => {
+              setSearchResults(prev => [data, ...prev]);
+              setIsModalOpen(false);
+            }}
+          />
+        )}
+      </div>
     </div>
-  )
+  );
 }

@@ -9,7 +9,7 @@ generator client {
 
 model School {
   id        String     @id @default(cuid())
-  name      String
+  name      String     @unique
   courses   Course[]
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
@@ -27,11 +27,12 @@ model Course {
   updatedAt   DateTime   @updatedAt
 
   @@unique([schoolId, courseCode])
+  @@index([schoolId])
 }
 
 model Professor {
   id        String     @id @default(cuid())
-  name      String
+  name      String     @unique
   courses   Course[]
   syllabi   Syllabus[]
   ratings   Rating[]
@@ -40,11 +41,11 @@ model Professor {
 }
 
 model Syllabus {
-  id          String    @id @default(cuid())
+  id          String     @id @default(cuid())
   year        Int
   term        String    // Fall, Winter, Spring, Summer
   fileUrl     String?
-  textContent String?
+  textContent String?   @db.Text
   course      Course    @relation(fields: [courseId], references: [id])
   courseId    String
   professor   Professor @relation(fields: [professorId], references: [id])
@@ -52,16 +53,31 @@ model Syllabus {
   ratings     Rating[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+
+  @@index([courseId])
+  @@index([professorId])
 }
 
 model Rating {
-  id          String    @id @default(cuid())
-  rating      Int       // 1-5
-  comment     String?
-  syllabus    Syllabus  @relation(fields: [syllabusId], references: [id])
-  syllabusId  String
-  professor   Professor @relation(fields: [professorId], references: [id])
+  id         String    @id @default(cuid())
+  rating     Int       // General rating
+  comment    String?   @db.Text
+  syllabus   Syllabus  @relation(fields: [syllabusId], references: [id])
+  syllabusId String
+  professor  Professor @relation(fields: [professorId], references: [id])
   professorId String
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([syllabusId])
+  @@index([professorId])
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
