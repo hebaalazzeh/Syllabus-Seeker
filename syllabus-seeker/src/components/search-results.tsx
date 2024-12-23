@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Star, Download, FileText, Calendar, School, User } from 'lucide-react';
-import Fuse from 'fuse.js';
-import PreviewModal from './preview-modal';
+import { useState, useEffect, useMemo } from "react";
+import { Star, Download, FileText, Calendar, School, User } from "lucide-react";
+import Fuse from "fuse.js";
+import PreviewModal from "./preview-modal";
 
 interface Rating {
   id: string;
@@ -37,9 +37,15 @@ interface SearchResultsProps {
   searchTerm?: string;
 }
 
-const RatingDisplay = ({ value, label }: { value: number | null | undefined, label: string }) => {
+const RatingDisplay = ({
+  value,
+  label,
+}: {
+  value: number | null | undefined;
+  label: string;
+}) => {
   if (!value) return null;
-  
+
   return (
     <div className="flex items-center gap-1 bg-yellow-100 dark:bg-yellow-900 px-3 py-1 rounded-full">
       <Star className="h-4 w-4 text-yellow-500" />
@@ -53,41 +59,45 @@ const RatingDisplay = ({ value, label }: { value: number | null | undefined, lab
   );
 };
 
-const SearchResults = ({ results, isLoading = false, searchTerm = '' }: SearchResultsProps) => {
+const SearchResults = ({ results, isLoading = false, searchTerm = "" }: SearchResultsProps) => {
   const [filteredResults, setFilteredResults] = useState<Syllabus[]>(results);
   const [previewSyllabus, setPreviewSyllabus] = useState<Syllabus | null>(null);
 
-  const fuseOptions = {
-    keys: [
-      'course.name',
-      'course.courseCode',
-      'course.school.name',
-      'professor.name',
-      'term'
-    ],
-    threshold: 0.3,
-    includeScore: true
-  };
+  // Memoize fuseOptions to avoid unnecessary recalculations
+  const fuseOptions = useMemo(
+    () => ({
+      keys: [
+        "course.name",
+        "course.courseCode",
+        "course.school.name",
+        "professor.name",
+        "term",
+      ],
+      threshold: 0.3,
+      includeScore: true,
+    }),
+    []
+  );
 
   useEffect(() => {
     if (searchTerm.trim()) {
       const fuse = new Fuse(results, fuseOptions);
       const searchResults = fuse.search(searchTerm);
-      setFilteredResults(searchResults.map(result => result.item));
+      setFilteredResults(searchResults.map((result) => result.item));
     } else {
       setFilteredResults(results);
     }
-  }, [results, searchTerm]);
+  }, [results, searchTerm, fuseOptions]);
 
   const getAverageRatings = (ratings: Rating[]) => {
     if (!ratings || ratings.length === 0) return { course: null, professor: null };
-    
+
     let courseTotal = 0;
     let courseCount = 0;
     let profTotal = 0;
     let profCount = 0;
 
-    ratings.forEach(rating => {
+    ratings.forEach((rating) => {
       if (rating.courseRating) {
         courseTotal += rating.courseRating;
         courseCount++;
@@ -100,17 +110,17 @@ const SearchResults = ({ results, isLoading = false, searchTerm = '' }: SearchRe
 
     return {
       course: courseCount > 0 ? courseTotal / courseCount : null,
-      professor: profCount > 0 ? profTotal / profCount : null
+      professor: profCount > 0 ? profTotal / profCount : null,
     };
   };
 
   const handleDownload = (syllabus: Syllabus) => {
     if (syllabus.fileUrl) {
-      window.open(syllabus.fileUrl, '_blank');
+      window.open(syllabus.fileUrl, "_blank");
     } else if (syllabus.textContent) {
-      const blob = new Blob([syllabus.textContent], { type: 'text/plain' });
+      const blob = new Blob([syllabus.textContent], { type: "text/plain" });
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
       a.download = `${syllabus.course.courseCode}-syllabus.txt`;
       document.body.appendChild(a);
@@ -138,7 +148,7 @@ const SearchResults = ({ results, isLoading = false, searchTerm = '' }: SearchRe
         <div className="text-center">
           <FileText className="mx-auto h-12 w-12 text-gray-400 mb-4" />
           <p className="text-xl text-gray-500 dark:text-gray-400">
-            {searchTerm ? 'No syllabi found matching your search' : 'No syllabi found'}
+            {searchTerm ? "No syllabi found matching your search" : "No syllabi found"}
           </p>
         </div>
       </div>
@@ -150,10 +160,10 @@ const SearchResults = ({ results, isLoading = false, searchTerm = '' }: SearchRe
       <div className="w-full max-w-5xl mx-auto mt-8 space-y-6">
         {filteredResults.map((syllabus) => {
           const ratings = getAverageRatings(syllabus.ratings);
-          
+
           return (
-            <div 
-              key={syllabus.id} 
+            <div
+              key={syllabus.id}
               className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 transform 
                        transition-all duration-200 hover:scale-[1.02]"
             >
@@ -163,19 +173,21 @@ const SearchResults = ({ results, isLoading = false, searchTerm = '' }: SearchRe
                     <School className="h-4 w-4" />
                     <span>{syllabus.course.school.name}</span>
                   </div>
-                  
+
                   <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
                     {syllabus.course.courseCode} - {syllabus.course.name}
                   </h3>
-                  
+
                   <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
                     <User className="h-4 w-4" />
                     <span>Professor {syllabus.professor.name}</span>
                   </div>
-                  
+
                   <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
                     <Calendar className="h-4 w-4" />
-                    <span>{syllabus.term} {syllabus.year}</span>
+                    <span>
+                      {syllabus.term} {syllabus.year}
+                    </span>
                   </div>
                 </div>
 
@@ -198,7 +210,7 @@ const SearchResults = ({ results, isLoading = false, searchTerm = '' }: SearchRe
                         Preview
                       </button>
                     )}
-                    
+
                     {(syllabus.fileUrl || syllabus.textContent) && (
                       <button
                         onClick={() => handleDownload(syllabus)}
@@ -220,10 +232,7 @@ const SearchResults = ({ results, isLoading = false, searchTerm = '' }: SearchRe
       </div>
 
       {previewSyllabus && (
-        <PreviewModal
-          syllabus={previewSyllabus}
-          onClose={() => setPreviewSyllabus(null)}
-        />
+        <PreviewModal syllabus={previewSyllabus} onClose={() => setPreviewSyllabus(null)} />
       )}
     </>
   );
