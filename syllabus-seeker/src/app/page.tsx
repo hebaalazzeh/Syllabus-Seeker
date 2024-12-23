@@ -6,8 +6,27 @@ import SearchResults from '@/components/search-results';
 import UploadModal from '@/components/upload-modal';
 import { Plus } from 'lucide-react';
 
+interface Syllabus {
+  id: string;
+  year: number;
+  term: string;
+  fileUrl?: string | null;
+  textContent?: string | null;
+  course: {
+    name: string;
+    courseCode: string;
+    school: {
+      name: string;
+    };
+  };
+  professor: {
+    name: string;
+  };
+  ratings: any[];
+}
+
 export default function Home() {
-  const [searchResults, setSearchResults] = useState([]);
+  const [searchResults, setSearchResults] = useState<Syllabus[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -68,10 +87,10 @@ export default function Home() {
         )}
       </div>
 
-      <footer className="w-full py-4 px-4 mt-auto bg-white dark:bg-gray-800 border-t dark:border-gray-700">
+      <footer className="w-full py-4 px-4 mt-auto border-t bg-white dark:bg-gray-800 dark:border-gray-700">
         <div className="container mx-auto text-center text-sm">
           <p className="text-gray-600 dark:text-gray-300">
-            © {new Date().getFullYear()} Syllabus Seeker. Created by Heba Alazzeh
+            © 2024 Syllabus Seeker. Created by Heba Alazzeh
           </p>
         </div>
       </footer>
