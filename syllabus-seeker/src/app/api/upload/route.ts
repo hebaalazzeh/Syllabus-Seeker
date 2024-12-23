@@ -3,7 +3,7 @@ import { prisma } from '@/lib/db';
 
 export const POST = async (req: Request) =>{
   try {
-    const data = await Request.json();
+    const data = await req.json();
     
     // Validate required fields
     if (!data.schoolName || !data.courseCode || !data.courseName || !data.professorName || !data.year || !data.term) {
