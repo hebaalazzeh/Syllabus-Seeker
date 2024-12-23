@@ -59,14 +59,15 @@ export const POST = async (req: Request) =>{
 
       // Create rating if provided
       if (data.rating || data.notes) {
-  await tx.rating.create({
-    data: {
-      rating: data.rating || null, // Use the single rating field
-      comment: data.notes || null,
-      syllabusId: syllabus.id,
-      professorId: professor.id,
-    },
-  });
+ await tx.rating.create({
+  data: {
+    courseRating: data.courseRating || null,
+    professorRating: data.professorRating || null,
+    comment: data.notes || null,
+    syllabusId: syllabus.id,
+    professorId: professor.id,
+  },
+});
 }
 
 

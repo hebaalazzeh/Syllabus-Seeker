@@ -1,73 +1,36 @@
-"use client";
+"use client"
 
 import { useState } from "react";
 import { Search, School, Book, User } from "lucide-react";
 
-// Define types for search parameters and results
-interface SearchParams {
-  school: string;
-  course: string;
-  professor: string;
-  year: string;
-}
-
-interface SearchResult {
-  id: string; // Adjust these properties to match your API response
-  title: string;
-  description: string;
-}
-
 interface SearchFormProps {
-  onSearch: (results: SearchResult[]) => void; // Use a specific type instead of `any[]`
-  onSearchStart?: () => void;
+  onSearch: (params: any) => void;
 }
 
-const SearchForm = ({ onSearch, onSearchStart }: SearchFormProps) => {
-  const [searchParams, setSearchParams] = useState<SearchParams>({
-    school: "",
-    course: "",
-    professor: "",
-    year: "",
+const SearchForm = ({ onSearch }: SearchFormProps) => {
+  const [searchParams, setSearchParams] = useState({
+    school: '',
+    course: '',
+    professor: '',
+    year: ''
   });
 
-  const [isSearching, setIsSearching] = useState(false);
-
-  const handleSearch = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSearching(true);
-    if (onSearchStart) onSearchStart();
-
-    try {
-      const queryParams = new URLSearchParams();
-      Object.entries(searchParams).forEach(([key, value]) => {
-        if (value) queryParams.append(key, value);
-      });
-
-      const response = await fetch(`/api/search?${queryParams}`);
-
-      if (!response.ok) {
-        throw new Error("Search request failed");
-      }
-
-      const results: SearchResult[] = await response.json();
-      onSearch(Array.isArray(results) ? results : []);
-
-    } catch (error) {
-      console.error("Search error:", error);
-      onSearch([]); // Return an empty array on error
-    } finally {
-      setIsSearching(false);
-    }
+    onSearch(searchParams);
   };
 
   const currentYear = new Date().getFullYear();
-  const years = Array.from({ length: currentYear - 1999 }, (_, i) => currentYear - i);
+  const years = Array.from(
+    { length: currentYear - 1999 },
+    (_, i) => currentYear - i
+  );
 
   return (
-    <form onSubmit={handleSearch} className="w-full max-w-4xl mx-auto p-6 space-y-4">
+    <form onSubmit={handleSubmit} className="w-full max-w-4xl mx-auto p-6 space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="relative">
-          <School className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+          <School className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
           <input
             type="text"
             placeholder="School name"
@@ -79,7 +42,7 @@ const SearchForm = ({ onSearch, onSearchStart }: SearchFormProps) => {
         </div>
 
         <div className="relative">
-          <Book className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+          <Book className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
           <input
             type="text"
             placeholder="Course code or name"
@@ -91,7 +54,7 @@ const SearchForm = ({ onSearch, onSearchStart }: SearchFormProps) => {
         </div>
 
         <div className="relative">
-          <User className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+          <User className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
           <input
             type="text"
             placeholder="Professor name"
@@ -119,21 +82,11 @@ const SearchForm = ({ onSearch, onSearchStart }: SearchFormProps) => {
 
       <button
         type="submit"
-        disabled={isSearching}
-        className="w-full bg-blue-600 text-white p-3 rounded-lg flex items-center justify-center gap-2 
-                 hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg flex items-center justify-center gap-2
+                 transition-colors"
       >
-        {isSearching ? (
-          <>
-            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-            Searching...
-          </>
-        ) : (
-          <>
-            <Search className="h-5 w-5" />
-            Search Syllabi
-          </>
-        )}
+        <Search className="h-5 w-5" />
+        Search Syllabi
       </button>
     </form>
   );

@@ -1,33 +1,32 @@
-"use client";
+"use client"
 
 import { useState } from 'react';
 import SearchForm from '@/components/search-form';
 import SearchResults from '@/components/search-results';
 import UploadModal from '@/components/upload-modal';
 
-// Define the expected type for search parameters
-type SearchParams = Record<string, string | number | undefined>;
-
 export default function Home() {
-  const [searchResults, setSearchResults] = useState([]);
+  const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleSearch = async (params: SearchParams) => {
+  const handleSearch = async (params: any) => {
     setIsLoading(true);
     try {
       const queryParams = new URLSearchParams();
       Object.entries(params).forEach(([key, value]) => {
-        if (value !== undefined) queryParams.append(key, value.toString());
+        if (value) queryParams.append(key, value as string);
       });
 
       const response = await fetch(`/api/search?${queryParams}`);
       if (!response.ok) throw new Error('Search failed');
-
+      
       const data = await response.json();
-      setSearchResults(data);
+      // Ensure searchResults is always an array
+      setSearchResults(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Search error:', error);
+      setSearchResults([]);
     } finally {
       setIsLoading(false);
     }
@@ -46,11 +45,12 @@ export default function Home() {
         </header>
 
         <SearchForm onSearch={handleSearch} />
-        <SearchResults results={searchResults} isLoading={isLoading} />
+        {/* Pass an empty array if searchResults is null or undefined */}
+        <SearchResults results={searchResults || []} isLoading={isLoading} />
 
         <button
           onClick={() => setIsModalOpen(true)}
-          className="fixed bottom-6 right-6 bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full 
+          className="fixed bottom-16 right-6 bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full 
                    shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-110"
           aria-label="Upload Syllabus"
         >
@@ -78,10 +78,10 @@ export default function Home() {
       </div>
 
       {/* Footer */}
-      <footer className="w-full py-4 px-4 border-t bg-white dark:bg-gray-800 dark:border-gray-700">
+      <footer className="w-full py-4 px-4 mt-auto border-t bg-white dark:bg-gray-800 dark:border-gray-700">
         <div className="container mx-auto text-center">
           <p className="text-gray-600 dark:text-gray-300">
-            © {new Date().getFullYear()} Syllabus Seeker. Created by Heba Alazzeh.
+              © {new Date().getFullYear()} Syllabus Seeker. Created by Heba Alazzeh
           </p>
         </div>
       </footer>
