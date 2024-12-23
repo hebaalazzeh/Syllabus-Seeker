@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 
-export default async function handler(req: Request, res: Response){
+export const POST = async (req: Request) =>{
   try {
     const data = await request.json();
     
@@ -58,17 +58,17 @@ export default async function handler(req: Request, res: Response){
       });
 
       // Create rating if provided
-      if (data.courseRating || data.professorRating || data.notes) {
-        await tx.rating.create({
-          data: {
-            courseRating: data.courseRating || null,
-            professorRating: data.professorRating || null,
-            comment: data.notes || null,
-            syllabusId: syllabus.id,
-            professorId: professor.id,
-          }
-        });
-      }
+      if (data.rating || data.notes) {
+  await tx.rating.create({
+    data: {
+      rating: data.rating || null, // Use the single rating field
+      comment: data.notes || null,
+      syllabusId: syllabus.id,
+      professorId: professor.id,
+    },
+  });
+}
+
 
       // Return complete syllabus with all relationships
       return await tx.syllabus.findUnique({

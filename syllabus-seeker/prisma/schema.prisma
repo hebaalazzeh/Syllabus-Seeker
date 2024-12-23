@@ -59,19 +59,21 @@ model Syllabus {
 }
 
 model Rating {
-  id         String    @id @default(cuid())
-  rating     Int       // General rating
-  comment    String?   @db.Text
-  syllabus   Syllabus  @relation(fields: [syllabusId], references: [id])
-  syllabusId String
-  professor  Professor @relation(fields: [professorId], references: [id])
-  professorId String
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
+  id              String    @id @default(cuid())
+  courseRating    Int?      // Nullable course rating
+  professorRating Int?      // Nullable professor rating
+  comment         String?   @db.Text
+  syllabus        Syllabus  @relation(fields: [syllabusId], references: [id])
+  syllabusId      String
+  professor       Professor @relation(fields: [professorId], references: [id])
+  professorId     String
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
   @@index([syllabusId])
   @@index([professorId])
 }
+
 
 model User {
   id               String    @id @default(cuid())

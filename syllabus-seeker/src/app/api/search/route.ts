@@ -12,63 +12,40 @@ export async function GET(request: Request) {
     console.log('Searching with params:', { school, course, professor, year });
 
     const syllabi = await prisma.syllabus.findMany({
-      where: {
-        course: {
-          AND: [
-            school ? {
-              school: {
-                name: {
-                  contains: school,
-                  mode: 'insensitive'
-                }
-              }
-            } : {},
-            course ? {
-              OR: [
-                {
-                  name: {
-                    contains: course,
-                    mode: 'insensitive'
-                  }
-                },
-                {
-                  courseCode: {
-                    contains: course,
-                    mode: 'insensitive'
-                  }
-                }
-              ]
-            } : {}
-          ]
-        },
-        professor: professor ? {
-          name: {
-            contains: professor,
-            mode: 'insensitive'
-          }
-        } : {},
-        year: year ? parseInt(year) : undefined
-      },
+  where: {
+    course: {
+      AND: [
+        school ? { school: { name: school } } : {},
+        course ? { courseCode: course } : {},
+      ],
+    },
+    professor: professor ? { name: professor } : {},
+    year: year ? parseInt(year, 10) : undefined,
+  },
+  include: {
+    course: {
       include: {
-        course: {
-          include: {
-            school: true
-          }
-        },
-        professor: true,
-        ratings: {
-          select: {
-            id: true,
-            rating: true,
-            comment: true,
-            createdAt: true
-          }
-        }
+        school: true,
       },
-      orderBy: {
-        createdAt: 'desc'
-      }
-    });
+    },
+    professor: true,
+    ratings: {
+      select: {
+        id: true,
+        courseRating: true,
+        professorRating: true,
+        comment: true,
+        createdAt: true,
+        syllabusId: true,
+        professorId: true,
+      },
+    },
+  },
+  orderBy: {
+    createdAt: "desc",
+  },
+});
+
 
     return NextResponse.json(syllabi);
 
