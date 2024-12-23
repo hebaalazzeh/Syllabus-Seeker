@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 
-export async function POST(request: Request) {
+export default async function handler(req: Request, res: Response){
   try {
     const data = await request.json();
     
