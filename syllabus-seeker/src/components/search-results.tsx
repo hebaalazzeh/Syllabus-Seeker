@@ -42,30 +42,29 @@ const RatingDisplay = ({
   value,
   label,
 }: {
-  value: number | null;
+  value: number | null | undefined;
   label: string;
 }) => {
-  if (value === null) return null;
-
+  if (value === null || value === undefined) return null;
   return (
     <div className="flex items-center gap-1 bg-yellow-100 dark:bg-yellow-900 px-3 py-1 rounded-full">
       <Star className="h-4 w-4 text-yellow-500" />
       <span className="font-medium text-yellow-700 dark:text-yellow-300">
-        {value.toFixed(1)}
+        {value.toFixed(1)} {label}
       </span>
-      <span className="text-sm text-yellow-600 dark:text-yellow-400">{label}</span>
     </div>
   );
 };
 
 const SearchResults = ({
-  results,
+  results = [],
   isLoading = false,
   searchTerm = "",
 }: SearchResultsProps) => {
   const [filteredResults, setFilteredResults] = useState<Syllabus[]>(results);
   const [previewSyllabus, setPreviewSyllabus] = useState<Syllabus | null>(null);
 
+  // Fuse options for search
   const fuseOptions = useMemo(
     () => ({
       keys: [
@@ -81,6 +80,7 @@ const SearchResults = ({
     []
   );
 
+  // Filter results using Fuse
   useEffect(() => {
     if (searchTerm.trim()) {
       const fuse = new Fuse(results, fuseOptions);
@@ -91,24 +91,21 @@ const SearchResults = ({
     }
   }, [results, searchTerm, fuseOptions]);
 
+  // Calculate average ratings
   const getAverageRatings = (ratings: Rating[]) => {
-    if (!ratings || ratings.length === 0)
-      return { course: null, professor: null };
+    if (!ratings || ratings.length === 0) return { course: null, professor: null };
 
-    let courseTotal = 0;
-    let courseCount = 0;
-    let profTotal = 0;
-    let profCount = 0;
+    let courseTotal = 0,
+      courseCount = 0,
+      profTotal = 0,
+      profCount = 0;
 
     ratings.forEach((rating) => {
-      if (rating.courseRating !== null && rating.courseRating !== undefined) {
+      if (rating.courseRating) {
         courseTotal += rating.courseRating;
         courseCount++;
       }
-      if (
-        rating.professorRating !== null &&
-        rating.professorRating !== undefined
-      ) {
+      if (rating.professorRating) {
         profTotal += rating.professorRating;
         profCount++;
       }
