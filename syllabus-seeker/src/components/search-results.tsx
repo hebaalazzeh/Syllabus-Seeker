@@ -67,6 +67,28 @@ const SearchResults = ({ results, isLoading = false, searchTerm = "" }: SearchRe
     }
   }, [results, searchTerm, fuseOptions]);
 
+  const getAverageRating = (ratings: Rating[], type: "courseRating" | "professorRating") => {
+    if (!Array.isArray(ratings) || ratings.length === 0) {
+      return "N/A";
+    }
+
+    const validRatings = ratings.filter(
+      (rating) =>
+        rating[type] !== null &&
+        rating[type] !== undefined &&
+        typeof rating[type] === "number"
+    );
+
+    if (validRatings.length === 0) {
+      return "N/A";
+    }
+
+    const sum = validRatings.reduce((acc, rating) => acc + (rating[type] as number), 0);
+    const average = sum / validRatings.length;
+
+    return average.toFixed(1);
+  };
+
   const handleDownload = (syllabus: Syllabus) => {
     if (syllabus.fileUrl) {
       window.open(syllabus.fileUrl, "_blank");
@@ -114,17 +136,8 @@ const SearchResults = ({ results, isLoading = false, searchTerm = "" }: SearchRe
     <>
       <div className="w-full max-w-5xl mx-auto mt-8 space-y-6">
         {filteredResults.map((syllabus) => {
-          const courseRating =
-            syllabus.ratings.length > 0 &&
-            syllabus.ratings[0].courseRating != null
-              ? syllabus.ratings[0].courseRating.toFixed(1)
-              : "N/A";
-
-          const professorRating =
-            syllabus.ratings.length > 0 &&
-            syllabus.ratings[0].professorRating != null
-              ? syllabus.ratings[0].professorRating.toFixed(1)
-              : "N/A";
+          const courseRating = getAverageRating(syllabus.ratings, "courseRating");
+          const professorRating = getAverageRating(syllabus.ratings, "professorRating");
 
           return (
             <div

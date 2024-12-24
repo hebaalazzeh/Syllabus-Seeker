@@ -1,6 +1,6 @@
-"use client"
+'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { Plus, X, Upload, FileText, AlertCircle, Star } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 
@@ -59,6 +59,7 @@ const StarRating = ({ rating, onRate }: { rating: number; onRate: (rating: numbe
 const UploadModal = ({ onClose, onSuccess }: UploadModalProps) => {
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<ErrorState>({ show: false, message: '' });
+  const uploadingRef = useRef(false);
   const [formData, setFormData] = useState<FormData>({
     schoolName: '',
     courseCode: '',
@@ -73,7 +74,19 @@ const UploadModal = ({ onClose, onSuccess }: UploadModalProps) => {
     notes: '',
   });
 
-  // Generate years from 2000 to current year
+  // Add cleanup effect
+  useEffect(() => {
+    return () => {
+      // Cleanup any pending state if component unmounts during upload
+      uploadingRef.current = false;
+    };
+  }, []);
+
+  // Update uploadingRef when isUploading changes
+  useEffect(() => {
+    uploadingRef.current = isUploading;
+  }, [isUploading]);
+
   const currentYear = new Date().getFullYear();
   const years = Array.from(
     { length: currentYear - 1999 },
@@ -110,6 +123,12 @@ const UploadModal = ({ onClose, onSuccess }: UploadModalProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Prevent multiple submissions
+    if (isUploading) {
+      return;
+    }
+
     if (!formData.textContent && !formData.file) {
       setError({
         show: true,
@@ -132,16 +151,24 @@ const UploadModal = ({ onClose, onSuccess }: UploadModalProps) => {
           body: fileFormData,
         });
 
+        const fileData = await fileResponse.json();
+        
+        // Add upload completion check
         if (!fileResponse.ok) {
-          throw new Error('File upload failed');
+          throw new Error('File upload request failed');
         }
 
-        const fileData = await fileResponse.json();
-        if (!fileData.success) {
+        // Verify the response structure
+        if (!fileData || !fileData.success) {
           throw new Error(fileData.error || 'File upload failed');
         }
 
-        fileUrl = fileData.data.secure_url;
+        if (!fileData.url) {
+          throw new Error('No URL received from server');
+        }
+
+        fileUrl = fileData.url;
+        console.log('File upload completed successfully:', fileUrl);
       }
 
       const submissionData = {
@@ -158,6 +185,8 @@ const UploadModal = ({ onClose, onSuccess }: UploadModalProps) => {
         notes: formData.notes.trim() || null,
       };
 
+      // Submit the form data
+      console.log('Submitting form data...');
       const response = await fetch('/api/upload', {
         method: 'POST',
         headers: {
@@ -167,26 +196,34 @@ const UploadModal = ({ onClose, onSuccess }: UploadModalProps) => {
       });
 
       const result = await response.json();
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to upload syllabus');
+      
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Failed to submit form');
       }
 
-      if (onSuccess) {
+      console.log('Form submission successful');
+      
+      if (onSuccess && uploadingRef.current) {
         onSuccess(result.data);
       }
 
-      // Close with a slight delay to show success state
-      setTimeout(() => {
+      // Only close if we haven't been unmounted
+      if (uploadingRef.current) {
         onClose();
-      }, 500);
+      }
 
     } catch (error) {
-      setError({
-        show: true,
-        message: error instanceof Error ? error.message : 'An error occurred'
-      });
+      console.error('Upload process error:', error);
+      if (uploadingRef.current) {
+        setError({
+          show: true,
+          message: error instanceof Error ? error.message : 'An error occurred during upload'
+        });
+      }
     } finally {
-      setIsUploading(false);
+      if (uploadingRef.current) {
+        setIsUploading(false);
+      }
     }
   };
 
@@ -362,8 +399,8 @@ const UploadModal = ({ onClose, onSuccess }: UploadModalProps) => {
                          focus:ring-2 focus:ring-blue-500 focus:border-transparent
                          transition-colors duration-200 min-h-[200px]"
                 value={formData.textContent}
-                              onChange={(e) => setFormData({ ...formData, textContent: e.target.value })}
-placeholder="Paste syllabus content here..."
+                onChange={(e) => setFormData({ ...formData, textContent: e.target.value })}
+                placeholder="Paste syllabus content here..."
               />
             </div>
           </div>
