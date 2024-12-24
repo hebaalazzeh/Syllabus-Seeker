@@ -67,22 +67,6 @@ const SearchResults = ({ results, isLoading = false, searchTerm = "" }: SearchRe
     }
   }, [results, searchTerm, fuseOptions]);
 
-  const getAverageRatings = (ratings: Rating[]) => {
-    if (!ratings || ratings.length === 0) return "N/A";
-
-    let courseTotal = 0;
-    let courseCount = 0;
-
-    ratings.forEach((rating) => {
-      if (typeof rating.courseRating === "number") {
-        courseTotal += rating.courseRating;
-        courseCount++;
-      }
-    });
-
-    return courseCount > 0 ? (courseTotal / courseCount).toFixed(1) : "N/A";
-  };
-
   const handleDownload = (syllabus: Syllabus) => {
     if (syllabus.fileUrl) {
       window.open(syllabus.fileUrl, "_blank");
@@ -98,33 +82,6 @@ const SearchResults = ({ results, isLoading = false, searchTerm = "" }: SearchRe
       document.body.removeChild(a);
     }
   };
-
-  if (isLoading) {
-    return (
-      <div className="w-full max-w-5xl mx-auto mt-8">
-        <div className="animate-pulse space-y-6">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="bg-gray-200 dark:bg-gray-700 h-40 rounded-xl"></div>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (filteredResults.length === 0) {
-    return (
-      <div className="w-full max-w-5xl mx-auto mt-8 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-12">
-        <div className="text-center">
-          <FileText className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-          <p className="text-xl text-gray-500 dark:text-gray-400">
-            {searchTerm
-              ? "No syllabi found matching your search"
-              : "No syllabi found"}
-          </p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <>
@@ -154,11 +111,33 @@ const SearchResults = ({ results, isLoading = false, searchTerm = "" }: SearchRe
                     {syllabus.term} {syllabus.year}
                   </span>
                 </div>
-                <div className="text-yellow-600 dark:text-yellow-300">
-                  Average Rating: {getAverageRatings(syllabus.ratings)}
-                </div>
               </div>
               <div className="flex flex-col items-end gap-4">
+                {/* Display Course Rating */}
+                <div className="flex items-center gap-1 bg-yellow-100 dark:bg-yellow-900 px-3 py-1 rounded-full">
+                  <Star className="h-4 w-4 text-yellow-500" />
+                  <span className="font-medium text-yellow-700 dark:text-yellow-300">
+                    {syllabus.ratings.length > 0 && syllabus.ratings[0].courseRating != null
+                      ? `${syllabus.ratings[0].courseRating}/5`
+                      : "N/A"}
+                  </span>
+                  <span className="text-sm text-yellow-600 dark:text-yellow-400">
+                    Course
+                  </span>
+                </div>
+                {/* Display Professor Rating */}
+                <div className="flex items-center gap-1 bg-yellow-100 dark:bg-yellow-900 px-3 py-1 rounded-full">
+                  <Star className="h-4 w-4 text-yellow-500" />
+                  <span className="font-medium text-yellow-700 dark:text-yellow-300">
+                    {syllabus.ratings.length > 0 && syllabus.ratings[0].professorRating != null
+                      ? `${syllabus.ratings[0].professorRating}/5`
+                      : "N/A"}
+                  </span>
+                  <span className="text-sm text-yellow-600 dark:text-yellow-400">
+                    Professor
+                  </span>
+                </div>
+                {/* Preview and Download Buttons */}
                 <div className="flex gap-4">
                   {(syllabus.fileUrl || syllabus.textContent) && (
                     <button
@@ -172,6 +151,7 @@ const SearchResults = ({ results, isLoading = false, searchTerm = "" }: SearchRe
                       Preview
                     </button>
                   )}
+
                   {(syllabus.fileUrl || syllabus.textContent) && (
                     <button
                       onClick={() => handleDownload(syllabus)}
