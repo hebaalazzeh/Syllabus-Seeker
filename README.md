@@ -58,3 +58,8 @@ Created by **Heba Alazzeh**
 - [Vercel](https://vercel.com/) for seamless hosting and deployment
 - [Neon](https://neon.tech/) for database hosting
 - Everyone who contributed or supported the development of this project
+- 
+---
+## Licensing
+This repository is **publicly accessible for viewing purposes only**. Redistribution, modification, or use of this code is prohibited without explicit permission.  
+
