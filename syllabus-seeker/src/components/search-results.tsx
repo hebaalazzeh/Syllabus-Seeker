@@ -38,7 +38,31 @@ interface SearchResultsProps {
   searchTerm?: string;
 }
 
-const SearchResults = ({ results, isLoading = false, searchTerm = "" }: SearchResultsProps) => {
+const RatingDisplay = ({
+  value,
+  label,
+}: {
+  value: number | null;
+  label: string;
+}) => {
+  if (value === null) return null;
+
+  return (
+    <div className="flex items-center gap-1 bg-yellow-100 dark:bg-yellow-900 px-3 py-1 rounded-full">
+      <Star className="h-4 w-4 text-yellow-500" />
+      <span className="font-medium text-yellow-700 dark:text-yellow-300">
+        {value.toFixed(1)}
+      </span>
+      <span className="text-sm text-yellow-600 dark:text-yellow-400">{label}</span>
+    </div>
+  );
+};
+
+const SearchResults = ({
+  results,
+  isLoading = false,
+  searchTerm = "",
+}: SearchResultsProps) => {
   const [filteredResults, setFilteredResults] = useState<Syllabus[]>(results);
   const [previewSyllabus, setPreviewSyllabus] = useState<Syllabus | null>(null);
 
@@ -67,26 +91,33 @@ const SearchResults = ({ results, isLoading = false, searchTerm = "" }: SearchRe
     }
   }, [results, searchTerm, fuseOptions]);
 
-  const getAverageRating = (ratings: Rating[], type: "courseRating" | "professorRating") => {
-    if (!Array.isArray(ratings) || ratings.length === 0) {
-      return "N/A";
-    }
+  const getAverageRatings = (ratings: Rating[]) => {
+    if (!ratings || ratings.length === 0)
+      return { course: null, professor: null };
 
-    const validRatings = ratings.filter(
-      (rating) =>
-        rating[type] !== null &&
-        rating[type] !== undefined &&
-        typeof rating[type] === "number"
-    );
+    let courseTotal = 0;
+    let courseCount = 0;
+    let profTotal = 0;
+    let profCount = 0;
 
-    if (validRatings.length === 0) {
-      return "N/A";
-    }
+    ratings.forEach((rating) => {
+      if (rating.courseRating !== null && rating.courseRating !== undefined) {
+        courseTotal += rating.courseRating;
+        courseCount++;
+      }
+      if (
+        rating.professorRating !== null &&
+        rating.professorRating !== undefined
+      ) {
+        profTotal += rating.professorRating;
+        profCount++;
+      }
+    });
 
-    const sum = validRatings.reduce((acc, rating) => acc + (rating[type] as number), 0);
-    const average = sum / validRatings.length;
-
-    return average.toFixed(1);
+    return {
+      course: courseCount > 0 ? courseTotal / courseCount : null,
+      professor: profCount > 0 ? profTotal / profCount : null,
+    };
   };
 
   const handleDownload = (syllabus: Syllabus) => {
@@ -136,8 +167,7 @@ const SearchResults = ({ results, isLoading = false, searchTerm = "" }: SearchRe
     <>
       <div className="w-full max-w-5xl mx-auto mt-8 space-y-6">
         {filteredResults.map((syllabus) => {
-          const courseRating = getAverageRating(syllabus.ratings, "courseRating");
-          const professorRating = getAverageRating(syllabus.ratings, "professorRating");
+          const ratings = getAverageRatings(syllabus.ratings);
 
           return (
             <div
@@ -166,17 +196,9 @@ const SearchResults = ({ results, isLoading = false, searchTerm = "" }: SearchRe
                   </div>
                 </div>
                 <div className="flex flex-col items-end gap-4">
-                  <div className="flex items-center gap-1 bg-yellow-100 dark:bg-yellow-900 px-3 py-1 rounded-full">
-                    <Star className="h-4 w-4 text-yellow-500" />
-                    <span className="font-medium text-yellow-700 dark:text-yellow-300">
-                      {courseRating} Course
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1 bg-yellow-100 dark:bg-yellow-900 px-3 py-1 rounded-full">
-                    <Star className="h-4 w-4 text-yellow-500" />
-                    <span className="font-medium text-yellow-700 dark:text-yellow-300">
-                      {professorRating} Professor
-                    </span>
+                  <div className="flex flex-col gap-2">
+                    <RatingDisplay value={ratings.course} label="Course" />
+                    <RatingDisplay value={ratings.professor} label="Professor" />
                   </div>
                   <div className="flex gap-4">
                     {(syllabus.fileUrl || syllabus.textContent) && (
@@ -191,7 +213,6 @@ const SearchResults = ({ results, isLoading = false, searchTerm = "" }: SearchRe
                         Preview
                       </button>
                     )}
-
                     {(syllabus.fileUrl || syllabus.textContent) && (
                       <button
                         onClick={() => handleDownload(syllabus)}
