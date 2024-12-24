@@ -83,6 +83,33 @@ const SearchResults = ({ results, isLoading = false, searchTerm = "" }: SearchRe
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="w-full max-w-5xl mx-auto mt-8">
+        <div className="animate-pulse space-y-6">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="bg-gray-200 dark:bg-gray-700 h-40 rounded-xl"></div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (filteredResults.length === 0) {
+    return (
+      <div className="w-full max-w-5xl mx-auto mt-8 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-12">
+        <div className="text-center">
+          <FileText className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+          <p className="text-xl text-gray-500 dark:text-gray-400">
+            {searchTerm
+              ? "No syllabi found matching your search."
+              : "No syllabi found."}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="w-full max-w-5xl mx-auto mt-8 space-y-6">
@@ -126,27 +153,18 @@ const SearchResults = ({ results, isLoading = false, searchTerm = "" }: SearchRe
                   </div>
                 </div>
                 <div className="flex flex-col items-end gap-4">
-                  {/* Display Course Rating */}
                   <div className="flex items-center gap-1 bg-yellow-100 dark:bg-yellow-900 px-3 py-1 rounded-full">
                     <Star className="h-4 w-4 text-yellow-500" />
                     <span className="font-medium text-yellow-700 dark:text-yellow-300">
-                      {courseRating}
-                    </span>
-                    <span className="text-sm text-yellow-600 dark:text-yellow-400">
-                      Course
+                      {courseRating} Course
                     </span>
                   </div>
-                  {/* Display Professor Rating */}
                   <div className="flex items-center gap-1 bg-yellow-100 dark:bg-yellow-900 px-3 py-1 rounded-full">
                     <Star className="h-4 w-4 text-yellow-500" />
                     <span className="font-medium text-yellow-700 dark:text-yellow-300">
-                      {professorRating}
-                    </span>
-                    <span className="text-sm text-yellow-600 dark:text-yellow-400">
-                      Professor
+                      {professorRating} Professor
                     </span>
                   </div>
-                  {/* Preview and Download Buttons */}
                   <div className="flex gap-4">
                     {(syllabus.fileUrl || syllabus.textContent) && (
                       <button
