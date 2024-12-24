@@ -12,6 +12,7 @@
   "dependencies": {
     "@prisma/client": "^6.1.0",
     "bcryptjs": "^2.4.3",
+    "fuse.js": "^7.0.0",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.303.0",
     "next": "^14.2.21",
