@@ -3,6 +3,7 @@
 import { X, Download, Star, Calendar, School, User } from "lucide-react";
 import FilePreview from "./file-preview";
 
+
 interface Rating {
   id: string;
   courseRating?: number | null;
