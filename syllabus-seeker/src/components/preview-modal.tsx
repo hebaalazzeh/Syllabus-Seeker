@@ -119,7 +119,7 @@ const PreviewModal = ({ onClose, syllabus }: PreviewModalProps) => {
 
           {/* Ratings Sidebar */}
           {filledRatings.length > 0 && (
-            <div style={{ border: "2px solid red", padding: "16px" }}>
+            <div style={{padding: "16px" }}>
               <h3 className="text-lg font-semibold dark:text-white mb-4">
                 Ratings & Reviews
               </h3>
@@ -128,7 +128,7 @@ const PreviewModal = ({ onClose, syllabus }: PreviewModalProps) => {
                   <div key={rating.id}>
                     <p>Course Rating: {rating.courseRating || "N/A"}</p>
                     <p>Professor Rating: {rating.professorRating || "N/A"}</p>
-                    <p>Comment: {rating.comment || "No Comment"}</p>
+                    <p>Comment(s): {rating.comment || "No Comment"}</p>
                   </div>
                 ))}
               </div>
