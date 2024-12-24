@@ -5,7 +5,6 @@ import { Star, Download, FileText, Calendar, School, User } from "lucide-react";
 import Fuse from "fuse.js";
 import PreviewModal from "./preview-modal";
 
-// Define Rating interface
 interface Rating {
   id: string;
   courseRating?: number | null;
@@ -14,7 +13,6 @@ interface Rating {
   createdAt: string;
 }
 
-// Define Syllabus interface
 interface Syllabus {
   id: string;
   year: number;
@@ -34,7 +32,6 @@ interface Syllabus {
   ratings: Rating[];
 }
 
-// Define props for SearchResults
 interface SearchResultsProps {
   results: Syllabus[];
   isLoading?: boolean;
@@ -69,6 +66,22 @@ const SearchResults = ({ results, isLoading = false, searchTerm = "" }: SearchRe
       setFilteredResults(results);
     }
   }, [results, searchTerm, fuseOptions]);
+
+  const getAverageRatings = (ratings: Rating[]) => {
+    if (!ratings || ratings.length === 0) return "N/A";
+
+    let courseTotal = 0;
+    let courseCount = 0;
+
+    ratings.forEach((rating) => {
+      if (typeof rating.courseRating === "number") {
+        courseTotal += rating.courseRating;
+        courseCount++;
+      }
+    });
+
+    return courseCount > 0 ? (courseTotal / courseCount).toFixed(1) : "N/A";
+  };
 
   const handleDownload = (syllabus: Syllabus) => {
     if (syllabus.fileUrl) {
@@ -141,6 +154,9 @@ const SearchResults = ({ results, isLoading = false, searchTerm = "" }: SearchRe
                     {syllabus.term} {syllabus.year}
                   </span>
                 </div>
+                <div className="text-yellow-600 dark:text-yellow-300">
+                  Average Rating: {getAverageRatings(syllabus.ratings)}
+                </div>
               </div>
               <div className="flex flex-col items-end gap-4">
                 <div className="flex gap-4">
@@ -156,7 +172,6 @@ const SearchResults = ({ results, isLoading = false, searchTerm = "" }: SearchRe
                       Preview
                     </button>
                   )}
-
                   {(syllabus.fileUrl || syllabus.textContent) && (
                     <button
                       onClick={() => handleDownload(syllabus)}
