@@ -12,6 +12,8 @@ Created by **Heba Alazzeh**
 
 ---
 
+⚠️ This project is for educational and personal use only. Reuse or distribution of the code is not permitted without explicit permission.
+
 ## 🌟 Features
 
 ### **Search**
