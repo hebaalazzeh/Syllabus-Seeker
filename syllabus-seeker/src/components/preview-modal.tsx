@@ -3,7 +3,6 @@
 import { X, Download, Star, Calendar, School, User } from "lucide-react";
 import FilePreview from "./file-preview";
 
-
 interface Rating {
   id: string;
   courseRating?: number | null;
@@ -37,8 +36,6 @@ interface PreviewModalProps {
 }
 
 const PreviewModal = ({ onClose, syllabus }: PreviewModalProps) => {
-  console.log("PreviewModal syllabus data:", syllabus);
-
   const handleDownload = async () => {
     if (syllabus.fileUrl) {
       window.open(syllabus.fileUrl, "_blank");
@@ -58,8 +55,6 @@ const PreviewModal = ({ onClose, syllabus }: PreviewModalProps) => {
   const filledRatings = syllabus.ratings.filter(
     (rating) => rating.courseRating || rating.professorRating || rating.comment
   );
-
-  console.log("Filtered Ratings:", filledRatings);
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
@@ -108,6 +103,7 @@ const PreviewModal = ({ onClose, syllabus }: PreviewModalProps) => {
 
         {/* Content */}
         <div className="flex flex-1 overflow-hidden">
+          {/* Main content */}
           <div className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900">
             <div className="min-h-[600px] h-full">
               <FilePreview
@@ -120,18 +116,48 @@ const PreviewModal = ({ onClose, syllabus }: PreviewModalProps) => {
 
           {/* Ratings Sidebar */}
           {filledRatings.length > 0 && (
-            <div style={{padding: "16px" }}>
-              <h3 className="text-lg font-semibold dark:text-white mb-4">
-                Ratings & Reviews
-              </h3>
-              <div>
-                {filledRatings.map((rating) => (
-                  <div key={rating.id}>
-                    <p>Course Rating: {rating.courseRating || "N/A"}</p>
-                    <p>Professor Rating: {rating.professorRating || "N/A"}</p>
-                    <p>Comment(s): {rating.comment || "No Comment"}</p>
-                  </div>
-                ))}
+            <div className="w-96 border-l dark:border-gray-700 overflow-y-auto bg-gray-50 dark:bg-gray-800/50">
+              <div className="p-6">
+                <h3 className="text-lg font-semibold dark:text-white mb-4">
+                  Ratings & Reviews
+                </h3>
+                <div className="space-y-6">
+                  {filledRatings.map((rating) => (
+                    <div
+                      key={rating.id}
+                      className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm"
+                    >
+                      {rating.courseRating && (
+                        <div className="flex items-center gap-2 mb-3">
+                          <Star className="h-5 w-5 text-yellow-500" />
+                          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Course Rating: {rating.courseRating}/5
+                          </span>
+                        </div>
+                      )}
+                      {rating.professorRating && (
+                        <div className="flex items-center gap-2 mb-3">
+                          <Star className="h-5 w-5 text-yellow-500" />
+                          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Professor Rating: {rating.professorRating}/5
+                          </span>
+                        </div>
+                      )}
+                      {rating.comment && (
+                        <p className="text-gray-600 dark:text-gray-300 text-sm mb-3">
+                          &ldquo;{rating.comment}&rdquo;
+                        </p>
+                      )}
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                        {new Date(rating.createdAt).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           )}
