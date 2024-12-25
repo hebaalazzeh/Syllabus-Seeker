@@ -12,6 +12,8 @@ Created by **Heba Alazzeh**
 
 ---
 
+⚠️ This project is for educational and personal use only. Reuse or distribution of the code is not permitted without explicit permission.
+
 ## 🌟 Features
 
 ### **Search**
@@ -56,3 +58,8 @@ Created by **Heba Alazzeh**
 - [Vercel](https://vercel.com/) for seamless hosting and deployment
 - [Neon](https://neon.tech/) for database hosting
 - Everyone who contributed or supported the development of this project
+  
+---
+## Licensing
+This repository is **publicly accessible for viewing purposes only**. Redistribution, modification, or use of this code is prohibited without explicit permission.  
+
