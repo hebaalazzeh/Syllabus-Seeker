@@ -90,7 +90,7 @@ export default function Home() {
       <footer className="w-full py-4 px-4 mt-auto border-t bg-white dark:bg-gray-800 dark:border-gray-700">
         <div className="container mx-auto text-center text-sm">
           <p className="text-gray-600 dark:text-gray-300">
-            © 2024 Syllabus Seeker. Created by Heba Alazzeh
+            © 2025 Syllabus Seeker. Created by Heba Alazzeh
           </p>
         </div>
       </footer>
