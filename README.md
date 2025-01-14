@@ -4,6 +4,8 @@
 
 Syllabus Seeker is a modern web application that empowers students to search, share, and access course syllabi from their schools. Designed for simplicity, accessibility, and efficiency, it’s built using Next.js, TypeScript, and Prisma with a sleek and responsive user interface.
 
+![1735022197684](https://github.com/user-attachments/assets/e7c0e7c6-9543-4e7d-a01a-69fcbba2286c)
+
 ---
 
 ## 👩‍💻 Author
