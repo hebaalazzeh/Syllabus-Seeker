@@ -58,7 +58,4 @@ Created by **Heba Alazzeh**
 
 ## 🙏 Acknowledgments
 
-- The [Next.js](https://nextjs.org/) team for their incredible framework
-- [Vercel](https://vercel.com/) for seamless hosting and deployment
-- [Neon](https://neon.tech/) for database hosting
-- Everyone who contributed or supported the development of this project
+- The ColorStack team for their endless support!!
