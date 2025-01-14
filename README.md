@@ -58,4 +58,4 @@ Created by **Heba Alazzeh**
 
 ## 🙏 Acknowledgments
 
-- The ColorStack team for their endless support!!
+- The ColorStack community for their endless support!!
